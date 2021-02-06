@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+<meta charset="UTF-8">
+<title>Avaliação Conquer</title>
+
+<!--Import Google Icon Font-->
+<!--Import Google Icon Font-->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet" />
+<!--Import materialize.css-->
+<link type="text/css" rel="stylesheet"
+	href="materialize/css/materialize.min.css" media="screen,projection" />
+
+<!--Let browser know website is optimized for mobile-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="style/styleCss.css" />
+<link href="/images/favicon.ico" rel="icon" type="image/x-icon" />
+</head>
+<body>
+	<div align="center">
+		<h1>GASTOS POR MUNICÍPIO</h1>
+
+		<div class="container mt-4">
+			<div class="row">
+				<div class="col-12">
+					<table class="table table-hover" border="1" style="padding: 1px;">
+						<thead>
+							<tr>
+								<th style="padding: 5px;" scope="col">Município</th>
+								<th style="padding: 5px;" scope="col">Nº de beneficiados</th>
+								<th style="padding: 5px;" scope="col">Ano início</th>
+								<th style="padding: 5px;" scope="col">Mês início</th>
+								<th style="padding: 5px;" scope="col">Ano fim</th>
+								<th style="padding: 5px;" scope="col">Mês fim</th>
+								<th style="padding: 5px;" scope="col">Gasto Total</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr align="center" th:each="gasto : ${gastosPorMunicipio}">
+								<td style="padding: 5px;" th:text="${gasto.municipio}">Município</td>
+								<td style="padding: 5px;" class="col-2"
+									th:text="${gasto.nroBeneficiados}">Nº de beneficiados</td>
+								<td style="padding: 5px;" th:text="${gasto.anoInic}">Ano
+									início</td>
+								<td style="padding: 5px;" th:text="${gasto.mesInic}">Mês
+									início</td>
+								<td style="padding: 5px;" th:text="${gasto.anoFim}">Ano fim</td>
+								<td style="padding: 5px;" th:text="${gasto.mesFim}">Mês fim</td>
+								<td style="padding: 5px;" th:text="${gasto.gasto}">Gasto</td>
+							</tr>
+						</tbody>
+					</table>
+					*Informações já persistidas na base de dados
+				</div>
+			</div>
+		</div>
+
+		<div style="padding-top: 20px;">
+			<a href="/">VOLTAR</a><a href="/target/gastos-por-minicipio.csv"
+				style="padding-left: 30px;">EXPORTAR GASTOS</a>
+		</div>
+
+	</div>
+</body>
+</html>

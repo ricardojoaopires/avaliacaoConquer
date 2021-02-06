@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>Avaliação Conquer</title>
+
+<!--Import Google Icon Font-->
+<!--Import Google Icon Font-->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet" />
+<!--Import materialize.css-->
+<link type="text/css" rel="stylesheet"
+	href="materialize/css/materialize.min.css" media="screen,projection" />
+
+<!--Let browser know website is optimized for mobile-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="style/styleCss.css" />
+<link href="/images/favicon.ico" rel="icon" type="image/x-icon" />
+</head>
+
+<body>
+	<div class="container" align="center">
+		<div class="row"></div>
+		<h1>VERIFICAR GASTOS POR MUNICÍPIO</h1>
+
+		<form th:action="@{/gastos}" method="get">
+
+			<div align="left"
+				style="width: 180px; padding: 15px; border-width: 1px; border-color: black; border-style: solid;">
+				<div>
+					<th:label>Código cidade - IBGE</th:label>
+					<input type="text" th:name="codCidade" />
+					<p style="font-size: 12px;">
+						Caso não saiba o código da cidade é só <a
+							href="https://cidades.ibge.gov.br" target="_blank">clicar
+							aqui</a>.
+					</p>
+				</div>
+				<div>
+					<th:label>Seleciona o(s) gasto(s) que deseja verificar</th:label>
+					<div>
+						<input type="checkbox" name="chechAuxilio" th:checked="false" />
+						<th:label style="font-size:12px;">Auxílio emergencial</th:label>
+					</div>
+					<div>
+						<input type="checkbox" name="chechBolsa" th:checked="false" />
+						<th:label style="font-size: 12px;">Bolsa família</th:label>
+					</div>
+
+				</div>
+				<div style="padding-top: 10px">
+					<th:label>Ano inicio</th:label>
+					<input type="text" th:name="anoInic" th:field="*{anoInic}"/>
+				</div>
+				<div style="padding-top: 10px">
+					<th:label>Mês inicio</th:label>
+					<input type="text" th:name="mesInic" />
+				</div>
+				<div style="padding-top: 10px">
+					<th:label>Ano fim</th:label>
+					<input type="text" th:name="anoFim" />
+				</div>
+				<div style="padding-top: 10px">
+					<th:label>Mês fim</th:label>
+					<input type="text" th:name="mesFim" />
+				</div>
+
+				<div align="center" style="padding-top: 10px">
+					<button type="submit">Buscar</button>
+				</div>
+			</div>
+		</form>
+
+		<img style="padding-top: 20px" th:src="@{~/images/logo_conquer.gif}" />
+	</div>
+</body>
+</html>
