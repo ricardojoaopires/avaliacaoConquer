@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-//@ComponentScan(basePackageClasses = { PortalTransparenciaClient.class })
 @EntityScan(basePackages = "avaliacao.conquer.model")
 @EnableJpaRepositories(basePackages = "avaliacao.conquer.repository")
 @EnableTransactionManagement

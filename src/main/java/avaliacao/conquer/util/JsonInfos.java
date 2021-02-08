@@ -1,7 +1,7 @@
 package avaliacao.conquer.util;
 
 /**
- * Classe utilitária responsável por guardar as váriavels exytraídas do Json.
+ * Classe utilitária responsável por guardar as váriavels extraídas do Json.
  * 
  * @author ricardo
  */

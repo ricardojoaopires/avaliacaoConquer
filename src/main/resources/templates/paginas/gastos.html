@@ -6,16 +6,6 @@
 <meta charset="UTF-8">
 <title>Avaliação Conquer</title>
 
-<!--Import Google Icon Font-->
-<!--Import Google Icon Font-->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-	rel="stylesheet" />
-<!--Import materialize.css-->
-<link type="text/css" rel="stylesheet"
-	href="materialize/css/materialize.min.css" media="screen,projection" />
-
-<!--Let browser know website is optimized for mobile-->
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="stylesheet" href="style/styleCss.css" />
 <link href="/images/favicon.ico" rel="icon" type="image/x-icon" />
 </head>
@@ -39,7 +29,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr align="center" th:each="gasto : ${gastosPorMunicipio}">
+							<tr align="center" th:each="gasto : ${gastos}">
 								<td style="padding: 5px;" th:text="${gasto.municipio}">Município</td>
 								<td style="padding: 5px;" class="col-2"
 									th:text="${gasto.nroBeneficiados}">Nº de beneficiados</td>
@@ -62,7 +52,6 @@
 			<a href="/">VOLTAR</a><a href="/target/gastos-por-minicipio.csv"
 				style="padding-left: 30px;">EXPORTAR GASTOS</a>
 		</div>
-
 	</div>
 </body>
 </html>

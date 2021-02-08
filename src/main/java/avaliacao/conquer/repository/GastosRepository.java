@@ -6,6 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import avaliacao.conquer.model.Gasto;
 
+/**
+ * Interface responsável pela manipulação do formulário.
+ * 
+ * @author ricardo
+ */
 @Transactional
 @Repository
 public interface GastosRepository extends CrudRepository<Gasto, Long> {

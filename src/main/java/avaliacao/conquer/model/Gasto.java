@@ -20,7 +20,6 @@ public class Gasto implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-
 	private String municipio;
 	private int nroBeneficiados;
 	private Long gasto;
@@ -169,7 +168,7 @@ public class Gasto implements Serializable {
 	 * 
 	 * @return as informações que serão exportadas.
 	 */
-	public String getInfosGastoexportacao() {
+	public String getInfosGastoParaExportacao() {
 		return municipio + ", " + nroBeneficiados + ", " + gasto + ", " + anoInic + ", " + mesInic + ", " + anoFim
 				+ ", " + mesFim;
 	}

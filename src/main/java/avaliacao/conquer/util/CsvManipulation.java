@@ -21,7 +21,7 @@ public class CsvManipulation {
 	}
 
 	/**
-	 * Método responsável pela escrita do conteúdo no arquivp CSV.
+	 * Método responsável pela escrita do conteúdo no arquivo CSV.
 	 * 
 	 * @param pw     @{@link PrintWriter}
 	 * @param gastos : os gastos que serão adicionados ao arquivo CSV.
@@ -29,7 +29,7 @@ public class CsvManipulation {
 	 */
 	public void write(final PrintWriter pw, final List<Gasto> gastos) throws IOException {
 		for (Gasto gasto : gastos) {
-			pw.write(gasto.getInfosGastoexportacao() + "\n");
+			pw.write(gasto.getInfosGastoParaExportacao() + "\n");
 		}
 	}
 }

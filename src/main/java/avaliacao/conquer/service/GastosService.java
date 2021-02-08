@@ -3,8 +3,8 @@ package avaliacao.conquer.service;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Optional;
 
 import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import avaliacao.conquer.model.Gasto;
+import avaliacao.conquer.util.BuscaInfos;
 import avaliacao.conquer.util.CsvManipulation;
 import avaliacao.conquer.util.JsonInfos;
 
@@ -36,7 +37,7 @@ public class GastosService {
 	private String URL_COMPLEMENTAR_AUXILIO = "/auxilio-emergencial-por-municipio";
 	private String URL_COMPLEMENTAR_BOLSA = "/bolsa-familia-por-municipio";
 
-	/** Chave da API Ricardo */
+	/** Chave da API - Ricardo */
 	private String KEY_API = "025c1e08af70e9ece7c7511ea5598bc8";
 
 	/** Names das requisições */
@@ -45,15 +46,35 @@ public class GastosService {
 	private static final String CODIGO_IBGE_NAME = "codigoIbge";
 	private static final String PAGINA_NAME = "pagina";
 
-	public Gasto getGastoByAPI(final Optional<String> codCidade, Optional<String> chechAuxilio,
-			Optional<String> chechBolsa, final Optional<String> anoInic, final Optional<String> mesInic,
-			final Optional<String> anoFim, final Optional<String> mesFim) {
+	/**
+	 * Método responsável por recuperar os gastos no Portal Transparência
+	 * recuperados via API Rest a partir das dados informados no formulário.
+	 * 
+	 * @param buscaInfos {@link BuscaInfos} : Objeto contendo as informações de
+	 *                   requisição para realizar a chamada.
+	 * @return {@link Gasto} : objeto contendo todas as informações do gasto
+	 *         correspondente aos dados informados do formulário.
+	 */
+	public Gasto getGastoByAPI(final BuscaInfos buscaInfos) {
 		Gasto gasto = null;
 		String json = null;
 
 		final RestTemplate restTemplate = new RestTemplate();
 
-		final List<String> urls = this.getUrls(chechAuxilio, chechBolsa);
+		final int anoBase = Calendar.getInstance().get(Calendar.YEAR) - 1;
+
+		/** Faz o tratamento dos anos. Considerei o ano anterior ao atual como base */
+		final int anoInic = buscaInfos.getAnoInic() == 0 ? anoBase : buscaInfos.getAnoInic();
+		final int mesInic = buscaInfos.getMesInic() == 0 ? 1 : buscaInfos.getMesInic();
+		final int anoFim = buscaInfos.getAnoFim() == 0 ? anoBase : buscaInfos.getAnoFim();
+		final int mesFim = buscaInfos.getMesFim() == 0 ? 12 : buscaInfos.getMesFim();
+
+		/**
+		 * 4205407 é o código de florianópolis - REMOVER APÓS A VALIDAÇÃO SER CORRIGIDA
+		 */
+		final Long codCidadeIBGE = buscaInfos.getCodCidade().equals(0L) ? 4205407 : buscaInfos.getCodCidade();
+
+		final List<String> urls = this.getUrls(buscaInfos.getChechAuxilio(), buscaInfos.getChechBolsa());
 		final List<String> anoMeses = this.getPeriodos(anoInic, mesInic, anoFim, mesFim);
 
 		int nroBeneficiados = 0;
@@ -64,19 +85,19 @@ public class GastosService {
 			for (String anoMes : anoMeses) {
 				final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 				builder.queryParam(MES_ANO_NAME, anoMes);
-				builder.queryParam(CODIGO_IBGE_NAME, codCidade);
+				builder.queryParam(CODIGO_IBGE_NAME, codCidadeIBGE);
 				builder.queryParam(PAGINA_NAME, "1");
 
 				final HttpHeaders headers = new HttpHeaders();
 				headers.setContentType(MediaType.APPLICATION_JSON);
 				headers.add(KEY_API_NAME, KEY_API);
 
-				HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headers);
+				final HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headers);
 
-				ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(),
+				final ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(),
 						HttpMethod.GET, requestEntity, String.class);
 
-				HttpStatus statusCode = responseEntity.getStatusCode();
+				final HttpStatus statusCode = responseEntity.getStatusCode();
 				if (statusCode == HttpStatus.OK) {
 					/** Remove os colchetes externo do response para desserializar o json */
 					json = responseEntity.getBody().replace("[", "").replace("]", "");
@@ -99,10 +120,10 @@ public class GastosService {
 		gasto.setMunicipio(municipio);
 		gasto.setNroBeneficiados(nroBeneficiados);
 		gasto.setGasto(gastoTotal);
-		gasto.setAnoInic(Integer.parseInt(anoInic.get()));
-		gasto.setMesInic(mesInic.get().isEmpty() ? 0 : Integer.parseInt(mesInic.get()));
-		gasto.setAnoFim(Integer.parseInt(anoFim.get()));
-		gasto.setMesFim(mesFim.get().isEmpty() ? 0 : Integer.parseInt(mesFim.get()));
+		gasto.setAnoInic(anoInic);
+		gasto.setMesInic(mesInic);
+		gasto.setAnoFim(anoFim);
+		gasto.setMesFim(mesFim);
 
 		return gasto;
 	}
@@ -112,20 +133,20 @@ public class GastosService {
 	 * fornecidas no formulário. Caso nenhum seja selecionada a busca será feita nas
 	 * duas URL's.
 	 * 
-	 * @param chechAuxilio <code>true</code> caso seja para recuperar os gastos
-	 *                     relacionados ao Auxílio emergencial.
-	 * @param chechBolsa   <code>true</code> caso seja para recuperar os gastos
-	 *                     relacionados ao Bolsa fampilia.
+	 * @param chechAuxilio informa se é para recuperar os gastos relacionados ao
+	 *                     Auxílio emergencial.
+	 * @param chechBolsa   informa se é para recuperar os gastos relacionados ao
+	 *                     Bolsa família.
 	 * @return as URL's que serão utilizadas na requisição.
 	 */
-	private List<String> getUrls(final Optional<String> chechAuxilio, final Optional<String> chechBolsa) {
+	private List<String> getUrls(final String chechAuxilio, final String chechBolsa) {
 		final List<String> urls = new ArrayList<>();
 
-		if (chechAuxilio.isPresent()) {
+		if (chechAuxilio != null && !chechAuxilio.isEmpty()) {
 			urls.add(URL + URL_COMPLEMENTAR_AUXILIO);
 		}
 
-		if (chechBolsa.isPresent()) {
+		if (chechBolsa != null && !chechBolsa.isEmpty()) {
 			urls.add(URL + URL_COMPLEMENTAR_BOLSA);
 		}
 
@@ -140,7 +161,7 @@ public class GastosService {
 	/**
 	 * Método responsável por recuperar os períodos no formato esperado pela API que
 	 * serão urilizados nas requisições através do anos e meses informados no
-	 * formulário. Ex.: aaaaMM - 201006
+	 * formulário. Ex.: aaaaMM - 202006.
 	 * 
 	 * @param anoInic : ano de início.
 	 * @param mesInic : mês de início. É considerado Janeiro = 1, caso não seja
@@ -148,36 +169,29 @@ public class GastosService {
 	 * @param anoFim  : ano de fim.
 	 * @param mesFim  : mês de fim. É considerado Dezembro = 12, caso não seja
 	 *                informado.
-	 * @return os períodos no formato esperado pela API que serão urilizados nas
-	 *         requisições
+	 * @return os períodos no formato esperado pela API.
 	 */
-	private List<String> getPeriodos(final Optional<String> anoInic, final Optional<String> mesInic,
-			final Optional<String> anoFim, final Optional<String> mesFim) {
+	private List<String> getPeriodos(final int anoInic, final int mesInic, final int anoFim, final int mesFim) {
 		final List<String> periodos = new ArrayList<>();
-		final int newAnoInic = Integer.parseInt(anoInic.get());
-		final int newMesInic = mesInic.get().isEmpty() ? 1 : Integer.parseInt(mesInic.get());
-		final int newAnoFim = Integer.parseInt(anoFim.get());
-		final int newMesFim = mesFim.get().isEmpty() ? 12 : Integer.parseInt(mesFim.get());
 
 		final int primeiroMes = 1;
 		final int ultimoMes = 12;
 
-		int counAno = newAnoInic;
-		int countMes = newMesInic;
+		int counAno = anoInic;
+		int countMes = mesInic;
 		for (; countMes <= ultimoMes;) {
 			/**
 			 * Tratamento feito pois a requisão espera o mês com 2 digitos e o Integer
-			 * remove o "0" da esquerda.
+			 * remove o "0" à esquerda.
 			 */
 			final String mesStr = countMes < 10 ? "0".concat(String.valueOf(countMes)) : String.valueOf(countMes);
 			periodos.add(String.valueOf(counAno).concat(mesStr));
 
 			// Caso o ano de fim e o mês de fim sejam o mesmo informado no formulário
-			// segnica que todos os períodos já foram montado.
-			if (counAno == newAnoFim && countMes == newMesFim) {
+			// signica que todos os períodos já foram montados.
+			if (counAno == anoFim && countMes == mesFim) {
 				break;
-				// Caso seja o mes seja Dezembro, ou seja, 12, volta para Janeiros e incrememta
-				// o ano.
+				// Caso o mês seja Dezembro (12), volta para Janeiros e incrememta o ano.
 			} else if (countMes == ultimoMes) {
 				countMes = primeiroMes;
 				counAno++;
@@ -189,6 +203,14 @@ public class GastosService {
 		return periodos;
 	}
 
+	/**
+	 * Método responsável por disserializar o Json recebido na requisição ao site do
+	 * Portal da Transparância com as informações dos gastos.
+	 * 
+	 * @param json : o Json a ser desserializado.
+	 * @return {@link JsonInfos} : Objeto contendo as informações dos gastos
+	 *         recebidas via Json da requisição ao Portal da Transparência.
+	 */
 	private JsonInfos jsonParse(final String json) {
 		final JSONObject obj = new JSONObject(json);
 		final String municipio = obj.getJSONObject("municipio").getString("nomeIBGE");
@@ -199,11 +221,10 @@ public class GastosService {
 	}
 
 	/**
-	 * Método responsável por concretizar a exportação e download dos gastos para
-	 * CSV.
+	 * Método responsável por concretizar a exportação/download dos gastos para CSV.
 	 * 
 	 * @param pw     {@link PrintWriter}
-	 * @param gastos : os gastos a serem exportados/baicados.
+	 * @param gastos : os gastos a serem exportados/baixados.
 	 */
 	public void baixarCsv(final PrintWriter pw, final List<Gasto> gastos) {
 		try {
@@ -211,6 +232,7 @@ public class GastosService {
 			csvManipulation.write(pw, gastos);
 		} catch (IOException e) {
 			e.printStackTrace();
+			new RuntimeException("Exceção ao extrair os gastos para CSV.", e);
 		}
 	}
 }
