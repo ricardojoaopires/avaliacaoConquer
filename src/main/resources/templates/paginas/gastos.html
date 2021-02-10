@@ -6,7 +6,6 @@
 <meta charset="UTF-8">
 <title>Avaliação Conquer</title>
 
-<link rel="stylesheet" href="style/styleCss.css" />
 <link href="/images/favicon.ico" rel="icon" type="image/x-icon" />
 </head>
 <body>
@@ -21,11 +20,12 @@
 							<tr>
 								<th style="padding: 5px;" scope="col">Município</th>
 								<th style="padding: 5px;" scope="col">Nº de beneficiados</th>
-								<th style="padding: 5px;" scope="col">Ano início</th>
-								<th style="padding: 5px;" scope="col">Mês início</th>
-								<th style="padding: 5px;" scope="col">Ano fim</th>
-								<th style="padding: 5px;" scope="col">Mês fim</th>
-								<th style="padding: 5px;" scope="col">Gasto Total</th>
+								<th style="padding: 5px;" scope="col">Mês inicial</th>
+								<th style="padding: 5px;" scope="col">Ano inicial</th>
+								<th style="padding: 5px;" scope="col">Mês final</th>
+								<th style="padding: 5px;" scope="col">Ano final</th>
+								<th style="padding: 5px;" scope="col">Gasto total (R$)</th>
+								<th style="padding: 5px;" scope="col">Fontes de informações</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -33,25 +33,34 @@
 								<td style="padding: 5px;" th:text="${gasto.municipio}">Município</td>
 								<td style="padding: 5px;" class="col-2"
 									th:text="${gasto.nroBeneficiados}">Nº de beneficiados</td>
-								<td style="padding: 5px;" th:text="${gasto.anoInic}">Ano
-									início</td>
 								<td style="padding: 5px;" th:text="${gasto.mesInic}">Mês
 									início</td>
-								<td style="padding: 5px;" th:text="${gasto.anoFim}">Ano fim</td>
+								<td style="padding: 5px;" th:text="${gasto.anoInic}">Ano
+									início</td>
 								<td style="padding: 5px;" th:text="${gasto.mesFim}">Mês fim</td>
+								<td style="padding: 5px;" th:text="${gasto.anoFim}">Ano fim</td>
 								<td style="padding: 5px;" th:text="${gasto.gasto}">Gasto</td>
+								<td style="padding: 5px; max-width: 200px;"
+									th:text="${gasto.fontes}">Fontes de informação</td>
 							</tr>
 						</tbody>
 					</table>
-					*Informações já persistidas na base de dados
+					<div style="padding-top: 5px;">
+						<span style="color: green;">*Informações salvas na base de
+							dados*</span>
+					</div>
 				</div>
 			</div>
 		</div>
 
 		<div style="padding-top: 20px;">
-			<a href="/">VOLTAR</a><a href="/target/gastos-por-minicipio.csv"
-				style="padding-left: 30px;">EXPORTAR GASTOS</a>
+			<a href="/gasto">VOLTAR</a><a href="/target/gastos-por-minicipio.csv"
+				style="padding-left: 30px;">EXPORTAR DADOS</a>
 		</div>
+		<a href="/"> <img style="padding-top: 20px"
+			th:src="@{~/images/logo_conquer.gif}"
+			title="Ir para a página principal" />
+		</a>
 	</div>
 </body>
 </html>

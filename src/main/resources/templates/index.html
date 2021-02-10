@@ -7,65 +7,11 @@
 <link href="/images/favicon.ico" rel="icon" type="image/x-icon" />
 <body>
 	<div class="container" align="center">
-		<div class="row"></div>
-		<h1>VERIFICAR GASTOS POR MUNICÍPIO</h1>
-
-		<form th:action="@{/gastos}" method="get" th:object="${buscaInfos}">
-			<div align="left"
-				style="width: 180px; padding: 15px; border-width: 1px; border-color: black; border-style: solid;">
-				<div>
-					<span style="color: red;" th:text="${msg}"></span>
-				</div>
-				<div>
-					<th:label>Código cidade - IBGE*</th:label>
-					<input type="number" th:name="codCidade"
-						th:value="${buscaInfos.codCidade}" oninput="mascara(this)" /> <span
-						style="font-size: 12px;"> Caso não saiba o código da cidade
-						é só <a href="https://cidades.ibge.gov.br" target="_blank">clicar
-							aqui</a>.
-					</span>
-				</div>
-				<div style="padding-top: 10px">
-					<th:label>Seleciona o(s) gasto(s) que deseja verificar</th:label>
-					<div>
-						<input type="checkbox" name="chechAuxilio" th:checked="false" />
-						<th:label style="font-size:12px;">Auxílio emergencial</th:label>
-					</div>
-					<div>
-						<input type="checkbox" name="chechBolsa" th:checked="false" />
-						<th:label style="font-size: 12px;">Bolsa família</th:label>
-					</div>
-
-				</div>
-				<div style="padding-top: 10px">
-					<th:label>Ano inicio</th:label>
-					<input type="number" th:name="anoInic"
-						th:value="${buscaInfos.anoInic}" maxlength="4"
-						oninput="mascara(this)" />
-				</div>
-				<div style="padding-top: 10px">
-					<th:label>Mês inicio</th:label>
-					<input type="number" th:name="mesInic"
-						th:value="${buscaInfos.mesInic}" maxlength="2" />
-				</div>
-				<div style="padding-top: 10px">
-					<th:label>Ano fim</th:label>
-					<input type="number" th:name="anoFim"
-						th:value="${buscaInfos.anoFim}" maxlength="4" />
-				</div>
-				<div style="padding-top: 10px">
-					<th:label>Mês fim</th:label>
-					<input type="number" th:name="mesFim"
-						th:value="${buscaInfos.mesFim}" maxlength="2" />
-				</div>
-				*<span style="font-size: 12px;">Campos obrigatórios</span>
-
-				<div align="center" style="padding-top: 10px">
-					<button type="submit">Buscar</button>
-				</div>
-			</div>
-		</form>
 		<img style="padding-top: 20px" th:src="@{~/images/logo_conquer.gif}" />
+
+		<h1>Avaliação Ricardo</h1>
+
+		<a href="/gasto">INICIAR</a>
 	</div>
 </body>
 </html>

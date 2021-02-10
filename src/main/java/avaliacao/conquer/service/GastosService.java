@@ -27,7 +27,6 @@ import avaliacao.conquer.util.JsonInfos;
  * Classe responsável pela comunicação com o Portal Transparência.
  * 
  * @author ricardo
- *
  */
 @Service
 public class GastosService {
@@ -36,6 +35,10 @@ public class GastosService {
 	private String URL = "http://www.transparencia.gov.br/api-de-dados";
 	private String URL_COMPLEMENTAR_AUXILIO = "/auxilio-emergencial-por-municipio";
 	private String URL_COMPLEMENTAR_BOLSA = "/bolsa-familia-por-municipio";
+	private String URL_BPC = "/bpc-por-municipio"; // Benefício de Prestação Continuada
+	private String URL_GARANTIA_SAFRA = "/safra-por-municipio";
+	private String URL_PETI = "/peti-por-municipio"; // Programa de Erradicação do Trabalho Infantil
+	private String URL_SEGURO_DEFESO = "/seguro-defeso-por-municipio";
 
 	/** Chave da API - Ricardo */
 	private String KEY_API = "025c1e08af70e9ece7c7511ea5598bc8";
@@ -47,13 +50,13 @@ public class GastosService {
 	private static final String PAGINA_NAME = "pagina";
 
 	/**
-	 * Método responsável por recuperar os gastos no Portal Transparência
-	 * recuperados via API Rest a partir das dados informados no formulário.
+	 * Método responsável por recuperar os gastos no Portal Transparência via API
+	 * Rest.
 	 * 
 	 * @param buscaInfos {@link BuscaInfos} : Objeto contendo as informações de
 	 *                   requisição para realizar a chamada.
-	 * @return {@link Gasto} : objeto contendo todas as informações do gasto
-	 *         correspondente aos dados informados do formulário.
+	 * @return {@link Gasto} : objeto contendo todas as informações da entidade
+	 *         gasto.
 	 */
 	public Gasto getGastoByAPI(final BuscaInfos buscaInfos) {
 		Gasto gasto = null;
@@ -63,18 +66,26 @@ public class GastosService {
 
 		final int anoBase = Calendar.getInstance().get(Calendar.YEAR) - 1;
 
-		/** Faz o tratamento dos anos. Considerei o ano anterior ao atual como base */
+		/**
+		 * Faz o tratamento dos anos quando não forem preenchidas na view. Considerei o
+		 * ano anterior ao atual como base
+		 */
 		final int anoInic = buscaInfos.getAnoInic() == 0 ? anoBase : buscaInfos.getAnoInic();
 		final int mesInic = buscaInfos.getMesInic() == 0 ? 1 : buscaInfos.getMesInic();
 		final int anoFim = buscaInfos.getAnoFim() == 0 ? anoBase : buscaInfos.getAnoFim();
 		final int mesFim = buscaInfos.getMesFim() == 0 ? 12 : buscaInfos.getMesFim();
 
-		/**
-		 * 4205407 é o código de florianópolis - REMOVER APÓS A VALIDAÇÃO SER CORRIGIDA
-		 */
-		final Long codCidadeIBGE = buscaInfos.getCodCidade().equals(0L) ? 4205407 : buscaInfos.getCodCidade();
+		//@formatter:off
+		final boolean auxilioChecked = buscaInfos.getCheckAuxilio();
+		final boolean bolsaChecked = buscaInfos.getCheckBolsa();
+		final boolean bpcChecked = buscaInfos.getCheckBPC();
+		final boolean safraChecked = buscaInfos.getCheckSafra();
+		final boolean petiChecked = buscaInfos.getCheckPeti();
+		final boolean seguroChecked = buscaInfos.getCheckSeguro();
+		//@formatter:on
 
-		final List<String> urls = this.getUrls(buscaInfos.getChechAuxilio(), buscaInfos.getChechBolsa());
+		final List<String> urls = this.getUrls(auxilioChecked, bolsaChecked, bpcChecked, safraChecked, petiChecked,
+				seguroChecked);
 		final List<String> anoMeses = this.getPeriodos(anoInic, mesInic, anoFim, mesFim);
 
 		int nroBeneficiados = 0;
@@ -83,9 +94,10 @@ public class GastosService {
 
 		for (String url : urls) {
 			for (String anoMes : anoMeses) {
+
 				final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 				builder.queryParam(MES_ANO_NAME, anoMes);
-				builder.queryParam(CODIGO_IBGE_NAME, codCidadeIBGE);
+				builder.queryParam(CODIGO_IBGE_NAME, buscaInfos.getCodMunicipio());
 				builder.queryParam(PAGINA_NAME, "1");
 
 				final HttpHeaders headers = new HttpHeaders();
@@ -94,8 +106,10 @@ public class GastosService {
 
 				final HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headers);
 
-				final ResponseEntity<String> responseEntity = restTemplate.exchange(builder.build().encode().toUri(),
-						HttpMethod.GET, requestEntity, String.class);
+				ResponseEntity<String> responseEntity = null;
+
+				responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, requestEntity,
+						String.class);
 
 				final HttpStatus statusCode = responseEntity.getStatusCode();
 				if (statusCode == HttpStatus.OK) {
@@ -110,22 +124,79 @@ public class GastosService {
 							municipio = jsonInfos.getMunicipio();
 						}
 
-						nroBeneficiados += jsonInfos.getNroBeneficiados();
-						gastoTotal += jsonInfos.getGasto();
+						final int newNroBeneficiados = jsonInfos.getNroBeneficiados();
+						final Long newGasto = jsonInfos.getGasto();
+
+						nroBeneficiados += newNroBeneficiados;
+						gastoTotal += newGasto;
+
+						gasto.setNroBeneficiados(newNroBeneficiados);
+						gasto.setGasto(newGasto);
 					}
 				}
 			}
 		}
 
-		gasto.setMunicipio(municipio);
-		gasto.setNroBeneficiados(nroBeneficiados);
-		gasto.setGasto(gastoTotal);
-		gasto.setAnoInic(anoInic);
-		gasto.setMesInic(mesInic);
-		gasto.setAnoFim(anoFim);
-		gasto.setMesFim(mesFim);
+		if (municipio != null) {
+			gasto.setMunicipio(municipio);
+			gasto.setNroBeneficiados(nroBeneficiados);
+			gasto.setGasto(gastoTotal);
+			gasto.setAnoInic(anoInic);
+			gasto.setMesInic(mesInic);
+			gasto.setAnoFim(anoFim);
+			gasto.setMesFim(mesFim);
+			gasto.setFontes(
+					this.getFontes(auxilioChecked, bolsaChecked, bpcChecked, safraChecked, petiChecked, seguroChecked));
+		}
 
 		return gasto;
+	}
+
+	/**
+	 * Recupera as fontes de informações de acordo com os check's selecionados no
+	 * formulário.
+	 * 
+	 * @param auxilioChecked <code>true</code> caso a fonte Auxílio emergencial
+	 *                       tenha sido selecionada na view.
+	 * @param bolsaChecked   <code>true</code> caso a fonte Bolsa família
+	 *                       emergencial tenha sido selecionada na view.
+	 * @param bpcChecked     <code>true</code> caso a fonte Benefício de prestação
+	 *                       continuada emergencial (BPC) tenha sido selecionada na
+	 *                       view.
+	 * @param safraChecked   <code>true</code> caso a fonte Garantia-Safra
+	 *                       emergencial tenha sido selecionada na view.
+	 * @param petiChecked    <code>true</code> caso a fonte Programa de erradicação
+	 *                       do trabalho infantil emergencial (PETI) tenha sido
+	 *                       selecionada na view.
+	 * @param seguroChecked  <code>true</code> caso a fonte Seguro defeso
+	 *                       emergencial tenha sido selecionada na view.
+	 * @return as URL's que serão utilizadas na requisição.
+	 */
+	private String getFontes(final boolean auxilioChecked, final boolean bolsaChecked, final boolean bpcChecked,
+			final boolean safraChecked, final boolean petiChecked, final boolean seguroChecked) {
+		final StringBuilder sb = new StringBuilder();
+		if (auxilioChecked) {
+			sb.append(" - ").append("Auxílio emergencial");
+		}
+		if (bolsaChecked) {
+			sb.append(" - ").append("Bolsa família");
+		}
+		if (bpcChecked) {
+			sb.append(" - ").append("BPC");
+		}
+		if (safraChecked) {
+			sb.append(" - ").append("Garantia-Safra");
+		}
+		if (petiChecked) {
+			sb.append(" - ").append("PETI");
+		}
+		if (seguroChecked) {
+			sb.append(" - ").append("Seguro defeso");
+		}
+		if (!sb.isEmpty()) {
+			sb.append(" -");
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -133,35 +204,60 @@ public class GastosService {
 	 * fornecidas no formulário. Caso nenhum seja selecionada a busca será feita nas
 	 * duas URL's.
 	 * 
-	 * @param chechAuxilio informa se é para recuperar os gastos relacionados ao
-	 *                     Auxílio emergencial.
-	 * @param chechBolsa   informa se é para recuperar os gastos relacionados ao
-	 *                     Bolsa família.
+	 * @param auxilioChecked <code>true</code> caso seja para recuperar os gastos da
+	 *                       fonte Auxílio emergencial.
+	 * @param bolsaChecked   <code>true</code> caso seja para recuperar os gastos da
+	 *                       fonte Bolsa família.
+	 * @param bpcChecked     <code>true</code> caso seja para recuperar os gastos da
+	 *                       fonte Benefício de prestação continuada emergencial
+	 *                       (BPC).
+	 * @param safraChecked   <code>true</code> caso seja para recuperar os gastos da
+	 *                       fonte Garantia-Safra.
+	 * @param petiChecked    <code>true</code> caso seja para recuperar os gastos da
+	 *                       fonte Programa de erradicação do trabalho infantil
+	 *                       (PETI).
+	 * @param seguroChecked  <code>true</code> caso seja para recuperar os gastos da
+	 *                       fonte Seguro defeso.
 	 * @return as URL's que serão utilizadas na requisição.
 	 */
-	private List<String> getUrls(final String chechAuxilio, final String chechBolsa) {
+	private List<String> getUrls(final boolean auxilioChecked, final boolean bolsaChecked, final boolean bpcChecked,
+			final boolean safraChecked, final boolean petiChecked, final boolean seguroChecked) {
 		final List<String> urls = new ArrayList<>();
 
-		if (chechAuxilio != null && !chechAuxilio.isEmpty()) {
+		if (auxilioChecked) {
 			urls.add(URL + URL_COMPLEMENTAR_AUXILIO);
 		}
-
-		if (chechBolsa != null && !chechBolsa.isEmpty()) {
+		if (bolsaChecked) {
 			urls.add(URL + URL_COMPLEMENTAR_BOLSA);
+		}
+		if (bpcChecked) {
+			urls.add(URL + URL_BPC);
+		}
+		if (safraChecked) {
+			urls.add(URL + URL_GARANTIA_SAFRA);
+		}
+		if (petiChecked) {
+			urls.add(URL + URL_PETI);
+		}
+		if (seguroChecked) {
+			urls.add(URL + URL_SEGURO_DEFESO);
 		}
 
 		if (urls.isEmpty()) {
 			urls.add(URL + URL_COMPLEMENTAR_AUXILIO);
 			urls.add(URL + URL_COMPLEMENTAR_BOLSA);
+			urls.add(URL + URL_BPC);
+			urls.add(URL + URL_GARANTIA_SAFRA);
+			urls.add(URL + URL_PETI);
+			urls.add(URL + URL_SEGURO_DEFESO);
 		}
 
 		return urls;
 	}
 
 	/**
-	 * Método responsável por recuperar os períodos no formato esperado pela API que
-	 * serão urilizados nas requisições através do anos e meses informados no
-	 * formulário. Ex.: aaaaMM - 202006.
+	 * Método responsável por recuperar os períodos no formato esperado pela API.
+	 * Ex.: aaaaMM - 202006.
 	 * 
 	 * @param anoInic : ano de início.
 	 * @param mesInic : mês de início. É considerado Janeiro = 1, caso não seja

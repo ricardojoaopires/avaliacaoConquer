@@ -32,7 +32,7 @@ public class JsonInfos {
 	}
 
 	/**
-	 * @return o nroBeneficiados.
+	 * @return o nº de beneficiados.
 	 */
 	public int getNroBeneficiados() {
 		return nroBeneficiados;

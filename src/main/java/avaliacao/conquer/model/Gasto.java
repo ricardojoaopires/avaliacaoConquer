@@ -27,18 +27,19 @@ public class Gasto implements Serializable {
 	private int mesInic;
 	private int anoFim;
 	private int mesFim;
+	private String fontes;
 
 	/**
-	 * @return o Identificados da entidade.
+	 * @return o Identificador da entidade.
 	 */
 	public Long getId() {
 		return id;
 	}
 
 	/**
-	 * Recupera o identificador de entidade.
+	 * Insere o identificador de entidade.
 	 * 
-	 * @param id : o Identificados da entidade.
+	 * @param id : o Identificador da entidade.
 	 */
 	public void setId(final Long id) {
 		this.id = id;
@@ -52,7 +53,7 @@ public class Gasto implements Serializable {
 	}
 
 	/**
-	 * Recupera o munícipio.
+	 * Insere o munícipio na entidade.
 	 * 
 	 * @param municipio : o munícipio.
 	 */
@@ -68,7 +69,7 @@ public class Gasto implements Serializable {
 	}
 
 	/**
-	 * Recupera o nº de beneficiados.
+	 * Insere o nº de beneficiados na entidade.
 	 * 
 	 * @param nroBeneficiados : o nº de beneficiados.
 	 */
@@ -84,7 +85,7 @@ public class Gasto implements Serializable {
 	}
 
 	/**
-	 * Recupera o gasto total.
+	 * Insere o gasto total na entidade.
 	 * 
 	 * @param gasto : o gasto total.
 	 */
@@ -93,67 +94,83 @@ public class Gasto implements Serializable {
 	}
 
 	/**
-	 * @return o ano de início.
+	 * @return o ano inicial.
 	 */
 	public int getAnoInic() {
 		return anoInic;
 	}
 
 	/**
-	 * Recupera o ano de início.
+	 * Insere o ano inicial na entidade.
 	 * 
-	 * @param anoInic : o ano de início.
+	 * @param anoInic : o ano inicial.
 	 */
 	public void setAnoInic(final int anoInic) {
 		this.anoInic = anoInic;
 	}
 
 	/**
-	 * @return o mês de início.
+	 * @return o mês inicial.
 	 */
 	public int getMesInic() {
 		return mesInic;
 	}
 
 	/**
-	 * Recupera o mês de início.
+	 * Insere o mês inicial na entidade.
 	 * 
-	 * @param mesInic : o mês de início.
+	 * @param mesInic : o mês inicial.
 	 */
 	public void setMesInic(final int mesInic) {
 		this.mesInic = mesInic;
 	}
 
 	/**
-	 * @return o ano de fim.
+	 * @return o ano final.
 	 */
 	public int getAnoFim() {
 		return anoFim;
 	}
 
 	/**
-	 * Recupera o ano de fim.
+	 * Insere o ano final na entidade.
 	 * 
-	 * @param anoFim : o ano de fim.
+	 * @param anoFim : o ano final.
 	 */
 	public void setAnoFim(final int anoFim) {
 		this.anoFim = anoFim;
 	}
 
 	/**
-	 * @return o mês de fim.
+	 * @return o mês final.
 	 */
 	public int getMesFim() {
 		return mesFim;
 	}
 
 	/**
-	 * Recupera o mês de fim.
+	 * Insere o mês final na entidade.
 	 * 
-	 * @param mesFim : o mês de fim.
+	 * @param mesFim : o mês de fim
 	 */
 	public void setMesFim(final int mesFim) {
 		this.mesFim = mesFim;
+	}
+
+	/**
+	 * @return as fontes de informações de busca concatenadas.
+	 */
+	public String getFontes() {
+		return fontes;
+	}
+
+	/**
+	 * Insere as fontes de informações de busca na entidade.
+	 * 
+	 * @param fontes : as fontes de informações de busca.
+	 */
+	public void setFontes(final String fontes) {
+		this.fontes = fontes;
 	}
 
 	@Override

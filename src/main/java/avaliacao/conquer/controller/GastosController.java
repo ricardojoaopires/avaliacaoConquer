@@ -1,13 +1,18 @@
 package avaliacao.conquer.controller;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -30,37 +35,71 @@ public class GastosController {
 
 	private GastosService service = new GastosService();
 
+	@RequestMapping("/gasto")
+	public ModelAndView home() {
+		final ModelAndView mv = new ModelAndView("paginas/gasto");
+		mv.addObject("buscaInfos", new BuscaInfos());
+		return mv;
+	}
+
 	/**
-	 * Método responsável por recuperar os gastos no Portal Transparência
-	 * recuperados via API Rest a partir das dados informados no formulário.
+	 * Método responsável por recuperar os gastos no Portal Transparência via API
+	 * Rest a persistir na base de dados.
 	 * 
-	 * @param buscaInfos {@link BuscaInfos} : dados informados no formulário.
+	 * @param buscaInfos {@link BuscaInfos} : dados informados no formulário para
+	 *                   montagem da requisição..
 	 * 
-	 * @return os gastos no Portal Transparência recuperados.
+	 * @return ModelAndView {@link ModelAndView}
 	 */
-	@GetMapping(value = "/gastos")
-	public ModelAndView buscaGastos(final BuscaInfos buscaInfos, final RedirectAttributes attributes) {
-		/**
-		 * Não funcionou o redirect para ficar na página index e apresentar a mensagem
-		 * de Código da cidade não informado
-		 */
-		// final Long codCidade = buscaInfos.getCodCidade();
-		// if (codCidade == null || codCidade.equals(0L)) {
-//			final ModelAndView mv = new ModelAndView("redirect:/index");
-//			mv.addObject("buscaInfos", buscaInfos);
-//			mv.addObject("msg", "Código da idade não informado");
-//			return mv;
-//		}
+	@PostMapping(value = "/gasto/salvar")
+	public ModelAndView salvarGasto(final @Valid BuscaInfos buscaInfos, final BindingResult bindingResult,
+			final RedirectAttributes attributes) {
 
-		/** Recupera o gasto do Portal da Transparência */
+		if (bindingResult.hasErrors()) {
+			final ModelAndView mv = new ModelAndView("paginas/gasto");
+			mv.addObject("buscaInfos", buscaInfos);
+			for (ObjectError error : bindingResult.getAllErrors()) {
+				mv.addObject("msg_erro", error.getDefaultMessage());
+			}
+			return mv;
+		}
+
+		/** Recupera o gasto no Portal da Transparência */
 		final Gasto gasto = service.getGastoByAPI(buscaInfos);
-		/** Persite o gasto na base de dados */
-		this.repository.save(gasto);
+		if (gasto != null) {
+			final Collection<Gasto> findGasto = this.repository.findGasto(gasto.getMunicipio(), gasto.getAnoInic(),
+					gasto.getMesInic(), gasto.getAnoFim(), gasto.getMesFim(), gasto.getNroBeneficiados());
 
+			/**
+			 * Persite o gasto na base de dados apenas se a mesma consulta já não foi
+			 * realizada
+			 */
+			if (findGasto == null || findGasto.isEmpty()) {
+				this.repository.save(gasto);
+
+				final ModelAndView mv = new ModelAndView("paginas/gasto");
+				mv.addObject("buscaInfos", new BuscaInfos());
+				mv.addObject("msg_sucesso", "Busca realizada e salva na base de dados com sucesso! Para verificar "
+						+ "todos os gastos basta clicar no link VER GASTOS logo abaixo do formulário.");
+				return mv;
+			}
+
+		}
+
+		return null;
+	}
+
+	/**
+	 * Método responsável por recuperar os gastos da base de dados e encaminhar para
+	 * view.
+	 * 
+	 * @return ModelAndView {@link ModelAndView}
+	 */
+	@GetMapping(value = "/gasto/buscar")
+	public ModelAndView buscaGastos() {
 		final ModelAndView mv = new ModelAndView("paginas/gastos");
 		final List<Gasto> gastos = (List<Gasto>) this.repository.findAll();
 		mv.addObject("gastos", gastos);
-
 		return mv;
 	}
 

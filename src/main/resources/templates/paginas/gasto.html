@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>Avaliação Conquer</title>
+<link href="/images/favicon.ico" rel="icon" type="image/x-icon" />
+<script>
+function mascara(i){
+   var v = i.value;
+   if(isNaN(v[v.length-1])){ // impede entrar outro caractere que não seja número
+      i.value = v.substring(0, v.length-1);
+      return;
+   }
+}
+    </script>
+<body>
+	<div class="container" align="center">
+		<div class="row"></div>
+		<h1>VERIFICAR GASTOS POR MUNICÍPIO</h1>
+
+		<form th:action="@{/gasto/salvar}" method="post">
+			<div align="left"
+				style="width: 300px; padding: 15px; border-width: 1px; border-color: black; border-style: solid;">
+				<div align="center">
+					<span style="color: green;" th:text="${msg_sucesso}"></span> <span
+						style="color: red;" th:text="${msg_erro}"></span>
+				</div>
+				<div style="padding-top: 15px">
+					<th:label>Código do município - IBGE<font color=#EF430A>*</font>
+					</th:label>
+					<input type="text" th:name="codMunicipio"
+						th:value="${buscaInfos.codMunicipio}"
+						placeholder="Ex: 3304557 (Código do Rio de Janeiro)"
+						oninput="mascara(this)" style="width: 290px;" /> <span
+						style="font-size: 12px;"> Consulte o código do município <a
+						href="https://cidades.ibge.gov.br" target="_blank">aqui</a>.
+					</span>
+				</div>
+				<div style="padding-top: 15px">
+					<th:label>Selecione o(s) gasto(s) que deseja verificar</th:label>
+					<div>
+						<input type="checkbox" name="checkAuxilio"
+							th:checked="${buscaInfos.checkAuxilio}" />
+						<th:label style="font-size:12px;">Auxílio emergencial</th:label>
+					</div>
+					<div>
+						<input type="checkbox" name="checkBolsa"
+							th:checked="${buscaInfos.checkBolsa}" />
+						<th:label style="font-size: 12px;">Bolsa família</th:label>
+					</div>
+					<div>
+						<input type="checkbox" name="checkBPC"
+							th:checked="${buscaInfos.checkBPC}" />
+						<th:label style="font-size: 12px;">BPC (Benefício de prestação continuada)</th:label>
+					</div>
+					<div>
+						<input type="checkbox" name="checkSafra"
+							th:checked="${buscaInfos.checkSafra}" />
+						<th:label style="font-size: 12px;">Garantia-Safra</th:label>
+					</div>
+					<div>
+						<input type="checkbox" name="checkPeti"
+							th:checked="${buscaInfos.checkPeti}" />
+						<th:label style="font-size: 12px;">PETI (Programa de erradicação do trabalho infantil)</th:label>
+					</div>
+					<div>
+						<input type="checkbox" name="checkSeguro"
+							th:checked="${buscaInfos.checkSeguro}" />
+						<th:label style="font-size: 12px;">Seguro defeso</th:label>
+					</div>
+
+				</div>
+				<div style="padding-top: 20px;">
+					<th:label>Período</th:label>
+				</div>
+				<div style="padding-top: 5px; display: inline-block;">
+					<th:label>Ano:</th:label>
+					<input type="text" th:name="anoInic"
+						th:value="${buscaInfos.anoInic}" maxlength="4"
+						oninput="mascara(this)" style="width: 65px;" />
+				</div>
+				<div style="padding-left: 15px; display: inline-block;">
+					<th:label>até</th:label>
+					<input type="text" th:name="anoFim" th:value="${buscaInfos.anoFim}"
+						oninput="mascara(this)" maxlength="4" style="width: 65px;" />
+				</div>
+				<div style="padding-top: 10px; display: inline-block;">
+					<th:label>Mês:</th:label>
+					<input type="text" th:name="mesInic"
+						th:value="${buscaInfos.mesInic}" oninput="mascara(this)"
+						maxlength="2" style="width: 65px;" />
+				</div>
+				<div
+					style="padding-top: 10px; padding-left: 15px; display: inline-block;">
+					<th:label>até</th:label>
+					<input type="text" th:name="mesFim" th:value="${buscaInfos.mesFim}"
+						oninput="mascara(this)" maxlength="2" style="width: 65px;" />
+				</div>
+				<div style="padding-top: 10px">
+					<font color=#EF430A>*</font><span style="font-size: 12px;">Campo
+						obrigatório</span>
+				</div>
+
+				<div align="center" style="padding-top: 10px">
+					<button type="submit">Buscar</button>
+				</div>
+			</div>
+		</form>
+		<div style="padding-top: 10px;">
+			<a href="/gasto/buscar">VERIFICAR GASTOS</a>
+		</div>
+		<a href="/"> <img style="padding-top: 20px"
+			th:src="@{~/images/logo_conquer.gif}"
+			title="Ir para a página principal" />
+		</a>
+	</div>
+</body>
+</html>
